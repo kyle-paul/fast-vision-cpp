@@ -40,4 +40,8 @@ add_executable( application tutorials/<the_file_you_want>.cpp )
 target_link_libraries( application ${OpenCV_LIBS} )
 ```
 
-All the *.cpp are stored in the tutorials directory. You must replace the executable files to the one that you would like to experiment.
+All the *.cpp are stored in the tutorials directory. You must replace the executable files to the one that you would like to experiment. Then you build the project and run the executable file.
+
+```
+cmake -B build && cmake --build build && ./build/application
+```
