@@ -69,7 +69,8 @@ int main(int argc, char** argv) {
 
 	// argument parser
 	cv::CommandLineParser parser(argc, argv, 
-		"{@input||image list}{help h||show help message}");
+		"{@input||image list}"
+        "{help h||show help message}");
 
 	if (parser.has("help")) {
 		parser.printMessage();
@@ -126,14 +127,30 @@ int main(int argc, char** argv) {
     cv::Mat reconstruction = pca.backProject(point); // re-create the image from the "point"
     reconstruction = reconstruction.reshape(images[0].channels(), images[0].rows); // reshape from a row vector into image shape
     reconstruction = toGrayscale(reconstruction); // re-scale for displaying purposes
-
     std::cout << "Reconstruction: " << reconstruction.size() << "\n";
 
-
-    // visualization
-	std::string outputFileName = "output.jpg";
-	cv::imwrite(outputFileName, reconstruction);
-	return 0;
+     // init highgui window
+    std::string winName = "Reconstruction | press 'q' to quit";
+    namedWindow(winName, cv::WINDOW_NORMAL);
+ 
+    // params struct to pass to the trackbar handler
+    params p;
+    p.data = data;
+    p.ch = images[0].channels();
+    p.rows = images[0].rows;
+    p.pca = pca;
+    p.winName = winName;
+ 
+    // create the tracbar
+    int pos = 95;
+    cv::createTrackbar("Retained Variance (%)", winName, &pos, 100, onTrackbar, (void*)&p);
+ 
+    // display until user presses q
+    imshow(winName, reconstruction);
+ 
+    char key = 0;
+    while(key != 'q') key = (char)cv::waitKey();
+    return 0;
 }
 
 /*

@@ -3,7 +3,7 @@ project( application )
 
 set(OpenCV_DIR /home/pc/libs/opencv-4.10.0/build)
 find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-add_executable( application tutorials/pca.cpp )
 
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( application tutorials/face-detection.cpp )
 target_link_libraries( application ${OpenCV_LIBS} )
