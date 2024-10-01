@@ -1,4 +1,5 @@
 #include <onnxruntime_cxx_api.h>
+#include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
@@ -77,21 +78,29 @@ std::vector<float> process_image(const std::string& image_path, int& input_width
 
 int main () 
 {
-	// constant
-    const std::string model_path = "/home/pc/dev/vision/assets/models/dinov2/onnx/dinov2.onnx";
+    // constant
+    const std::string model_path = "/home/pc/dev/opencv/models/dinov2/dinov2.onnx";
     const std::string image_path = "/home/pc/dev/dataset/samples/truck.jpg";
     int input_width = 518;
     int input_height = 518;
     int shortest_edge = 518;
 
     // Initialize the ONNX Runtime environment
-	Ort::Env env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort-tensort");	
-	Ort::SessionOptions session_options;
-	const char* cache_path = "home/pc/dev/vision/assets/models/dinov2/onnx";
-    Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Tensorrt(session_options, 0));
-	Ort::Session session(env, model_path.c_str(), session_options);
+    Ort::Env env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort-tensort");  
+    Ort::SessionOptions session_options;
 
-	// Define batch size and input/output sizes
+    OrtTensorRTProviderOptions options{};
+    options.device_id = 0; // code the device id needed
+    options.trt_max_workspace_size = 21474836480;
+    options.trt_max_partition_iterations = 1000; 
+    options.trt_min_subgraph_size = 1;
+    options.trt_engine_cache_enable = 1;
+    options.trt_engine_cache_path = "/home/pc/dev/opencv/models/dinov2";
+    session_options.AppendExecutionProvider_TensorRT(options);
+    Ort::Session session(env, model_path.c_str(), session_options);
+
+
+    // Define batch size and input/output sizes
     int64_t batch_size = 1;
     size_t input_size = batch_size * 3 * 518 * 518;
     size_t output_size = batch_size * 768;

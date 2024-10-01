@@ -1,3 +1,6 @@
 build/
 dataset/
 README.html
+*.onnx
+*.engine
+*.pt

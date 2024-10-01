@@ -1,4 +1,5 @@
 #include <onnxruntime_cxx_api.h>
+#include <cuda_runtime.h>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
@@ -77,21 +78,63 @@ std::vector<float> process_image(const std::string& image_path, int& input_width
 
 int main () 
 {
-	// constant
-    const std::string model_path = "/home/pc/dev/vision/assets/models/dinov2/onnx/dinov2.onnx";
+    // constant
+    const std::string model_path = "/home/pc/dev/opencv/models/dinov2/dinov2.onnx";
     const std::string image_path = "/home/pc/dev/dataset/samples/truck.jpg";
     int input_width = 518;
     int input_height = 518;
     int shortest_edge = 518;
 
     // Initialize the ONNX Runtime environment
-	Ort::Env env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort-tensort");	
-	Ort::SessionOptions session_options;
-	const char* cache_path = "home/pc/dev/vision/assets/models/dinov2/onnx";
-    Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_Tensorrt(session_options, 0));
-	Ort::Session session(env, model_path.c_str(), session_options);
+    Ort::Env env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "ort-tensort");  
+    Ort::SessionOptions session_options;
 
-	// Define batch size and input/output sizes
+    const auto& api = Ort::GetApi();
+    OrtTensorRTProviderOptionsV2* tensorrt_options;
+    Ort::ThrowOnError(api.CreateTensorRTProviderOptions(&tensorrt_options));
+
+    std::vector<const char*> option_keys = {
+        "device_id",
+        "trt_max_workspace_size",
+        "trt_max_partition_iterations",
+        "trt_min_subgraph_size",
+        "trt_fp16_enable",
+        "trt_engine_cache_enable",
+        "trt_engine_cache_path",
+        "trt_timing_cache_enable",
+        "trt_timing_cache_path",
+    };
+
+    std::vector<const char*> option_values = {
+        "0",
+        "21474836480",
+        "1000",
+        "1",
+        "false",
+        "true",
+        "/home/pc/dev/opencv/models/dinov2",
+        "true",
+        "/home/pc/dev/opencv/models/dinov2",
+    };
+
+    Ort::ThrowOnError(
+        api.UpdateTensorRTProviderOptions(
+            tensorrt_options, 
+            option_keys.data(), 
+            option_values.data(), 
+            option_keys.size()
+        )
+    );
+
+    session_options.AppendExecutionProvider_TensorRT_V2(*tensorrt_options);
+    OrtAllocator* allocator;
+    char* options;
+    Ort::ThrowOnError(api.GetAllocatorWithDefaultOptions(&allocator));
+    Ort::ThrowOnError(api.GetTensorRTProviderOptionsAsString(tensorrt_options, allocator, &options));
+    Ort::Session session(env, model_path.c_str(), session_options);
+
+
+    // Define batch size and input/output sizes
     int64_t batch_size = 1;
     size_t input_size = batch_size * 3 * 518 * 518;
     size_t output_size = batch_size * 768;
