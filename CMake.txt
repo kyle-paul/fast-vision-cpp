@@ -1,17 +1,24 @@
 cmake_minimum_required(VERSION 3.10)
-project(application LANGUAGES CXX)
+project(application LANGUAGES CXX CUDA)
 
 enable_language(CXX CUDA)
 
+# Set OpenCV and ONNX Runtime directories
 set(OpenCV_DIR /home/pc/libs/opencv-4.10.0/build)
-set(OpenVINO_DIR /opt/intel/openvino_2024.4.0/runtime/cmake)
+
 set(ONNXRUNTIME_DIR /home/pc/libs/onnxruntime-linux-x64-gpu-1.19.2)
 set(ONNXRUNTIME_LIBS ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+
+set(ONNXRUNTIME_CUDA ${ONNXRUNTIME_DIR}/lib/libonnxruntime_providers_cuda.so)
+set(ONNXRUNTIME_TENSORRT ${ONNXRUNTIME_DIR}/lib/libonnxruntime_providers_tensorrt.so)
 set(ONNXRUNTIME_OPENVINO ${ONNXRUNTIME_DIR}/lib/libonnxruntime_providers_openvino.so)
+
+
+set(OPENVINO_DIR /opt/intel/openvino_2024.4.0/runtime)
+set(OPENVINO_LIBS ${OPENVINO_DIR}/lib/intel64)
 
 # Find OpenCV
 find_package(OpenCV REQUIRED)
-find_package(OpenVINO REQUIRED)
 find_package(CUDAToolkit)
 
 # Manually specify ONNX Runtime include and library paths
@@ -28,4 +35,10 @@ target_link_libraries(application
     ${ONNXRUNTIME_CUDA}
     ${ONNXRUNTIME_TENSORRT}
     ${ONNXRUNTIME_OPENVINO}
+    ${OPENVINO_LIBS}/libopenvino.so
+    ${OPENVINO_LIBS}/libopenvino_onnx_frontend.so
+    ${OPENVINO_LIBS}/libopenvino_paddle_frontend.so
+    ${OPENVINO_LIBS}/libopenvino_pytorch_frontend.so
+    ${OPENVINO_LIBS}/libopenvino_ir_frontend.so.2440
+    
 )
