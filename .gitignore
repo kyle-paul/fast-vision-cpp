@@ -4,3 +4,5 @@ README.html
 *.onnx
 *.engine
 *.pt
+*.timing
+*.ir
