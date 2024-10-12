@@ -6,3 +6,4 @@ README.html
 *.pt
 *.timing
 *.ir
+*.profile
