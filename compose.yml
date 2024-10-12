@@ -1,0 +1,20 @@
+services:
+  trt:
+    image: kylepaul/deeplearning:deployment
+    container_name: opencv-onnx
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - /home/pc/dev/opencv-onnx:/workspace
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    stdin_open: true
+    tty: true
+    network_mode: host

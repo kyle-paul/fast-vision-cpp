@@ -1,5 +1,11 @@
-# Computer Vision with OpenCV in C++
-Welcome to the Computer Vision with OpenCV in C++ repository! This project is designed to provide a comprehensive introduction to computer vision techniques using the powerful OpenCV library in C++.
+# Computer Vision in C++ with OpenCV and accelerated performance backends.
+Welcome to the Computer Vision with OpenCV in C++ repository! This project is designed to provide a comprehensive introduction to computer vision techniques using the powerful OpenCV library in C++. The folder `convert` is python code that convert a pytorch model (e.g dinov2) into `onnx` format for acceleated performance. In order to run the conver code in python, you need to use Docker or your own environment. For those want to use docker:
+
+```bash
+docker pull kylepaul/deeplearning:deployment`
+```
+
+More information of this docker image is at [here](`https://hub.docker.com/repository/docker/kylepaul/deeplearning/tags`). Then you would want to follow my `compose.yml` file for intitializing docker container and runnning with `docker compose up -d`
 
 ## Getting Started
 To get started with this repository, you will need to have a basic understanding of C++ and an environment set up with OpenCV. You can find installation instructions and prerequisites in the Installation Guide below.
@@ -43,7 +49,7 @@ find_package( OpenCV REQUIRED )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 add_executable( application tutorials/<the_file_you_want>.cpp )
-target_link_libraries( application ${OpenCV_LIBS} )
+target_link_libraries( ${PROJECT_NAME} ${OpenCV_LIBS} )
 ```
 
 All the *.cpp are stored in the tutorials directory. You must replace the executable files to the one that you would like to experiment. Then you build the project and run the executable file.
@@ -52,37 +58,40 @@ cmake -B build && cmake --build build && ./build/application
 ```
 
 ### Torch dependencies
+You can follow the instruction of installing the prebuilt libtorch package at [pytoch document](https://pytorch.org/cppdocs/installing.html). Then you have to append the path to your `libtorch` package in `CMAKE_PREFIX_PATH` if you do not set it in the default system path.
 
-```md
+```cmake
+list(APPEND CMAKE_PREFIX_PATH /path/to/your/libtorch)
+find_package(Torch REQUIRED)
+
+target_link_libraries(${PROJECT_NAME} ${TORCH_LIBRARIES})
 ```
 
 ### OnnxRuntime dependencies
+#### CUDA and TensorRT backends
+Go to the onnxruntime [github releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.19.2) and choose the prebuilt package that is compatible with your sysmte. For example, this project is built on ubuntu 24.04. Thus the package is `onnxruntime-linux-x64-gpu-1.19.2.tgz`. Then you need to set the path in cmake and include in the target libraries.
+```cmake
+set(ONNXRUNTIME_DIR /path/to/onnxruntime-linux-x64-gpu-1.19.2)
+set(ONNXRUNTIME_LIBS ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
 
-```md
+find_package(CUDAToolkit)
+
+target_link_libraries(application 
+    ${ONNXRUNTIME_LIBS} 
+    ${ONNXRUNTIME_CUDA}
+    ${ONNXRUNTIME_TENSORRT}
+)
 ```
 
-### TensorRT dependencies
-```md
+Because, there is no prebuilt package for `openvino` backend from onnxruntime releases. We need to build the onnxruntime from source `./build.sh` with option `--use_openvino <hardware_option>` `--build_shared_lib --build` . The full documentation can be found [here](https://onnxruntime.ai/docs/build/eps.html#openvino)
+#### Openvino dependencies
+```cmake
+set(OpenVINO_DIR /path/to/o
+    penvino_2024.4.0/runtime/cmake)
+set(ONNXRUNTIME_OPENVINO ${ONNXRUNTIME_DIR}/lib/libonnxruntime_providers_openvino.so)
+
+find_package(OpenVINO REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${ONNXRUNTIME_OPENVINO})
 ```
 
-### Openvino dependencies
-```md
-```
-
-
-```mermaid
-classDiagram
-Class01 <|-- AveryLongClass : Cool
-Class03 *-- Class04
-Class05 o-- Class06
-Class07 .. Class08
-Class09 --> C2 : Where am i?
-Class09 --* C3
-Class09 --|> Class07
-Class07 : equals()
-Class07 : Object[] elementData
-Class01 : size()
-Class01 : int chimp
-Class01 : int gorilla
-Class08 <--> C2: Cool label
-```
+You can reference to the `CMakeLists.txt` in the repository.
