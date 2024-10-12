@@ -1,8 +1,8 @@
 # Computer Vision in C++ with OpenCV and accelerated performance backends.
-Welcome to the Computer Vision with OpenCV in C++ repository! This project is designed to provide a comprehensive introduction to computer vision techniques using the powerful OpenCV library in C++. The folder `convert` is python code that convert a pytorch model (e.g dinov2) into `onnx` format for acceleated performance. In order to run the conver code in python, you need to use Docker or your own environment. For those want to use docker:
+Welcome to the Computer Vision with OpenCV in C++ repository! This project is designed to provide a comprehensive introduction to computer vision techniques using the powerful OpenCV library in C++. The folder `convert` is python code that convert a pytorch model (e.g dinov2, sam) into `onnx` format for acceleated performance. In order to run the conver code in python, you need to use Docker or your own environment. For those want to use docker:
 
 ```bash
-docker pull kylepaul/deeplearning:deployment`
+docker pull kylepaul/deeplearning:deployment
 ```
 
 More information of this docker image is at [here](`https://hub.docker.com/repository/docker/kylepaul/deeplearning/tags`). Then you would want to follow my `compose.yml` file for intitializing docker container and runnning with `docker compose up -d`
